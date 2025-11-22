@@ -1,27 +1,30 @@
-const CACHE_NAME = 'snapsudoku-v2';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+const CACHE_NAME = 'snapsudoku-v3';
+const OFFLINE_URL = 'index.html';
+
+const PRECACHE_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  'https://cdn-icons-png.flaticon.com/512/10256/10256495.png'
 ];
 
-// Install SW and cache static core assets
+// Install event: Cache core assets immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
+    })
   );
   self.skipWaiting();
 });
 
-// Activate and clean up old caches
+// Activate event: Clean up old caches
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
@@ -31,44 +34,67 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch strategy: Stale-while-revalidate for most things, Cache First for immutable CDNs
+// Fetch event: Handle requests
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Handle external CDN resources (Tailwind, React, Icons, etc.)
-  // We cache these dynamically as they are requested
+  // 1. Navigation requests (HTML): Network First -> Fallback to Cache
+  // This ensures the user gets the latest version of the app if online.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return caches.match(OFFLINE_URL);
+        })
+    );
+    return;
+  }
+
+  // 2. Static Assets (CDNs): Cache First -> Fallback to Network
+  // External libraries and images don't change often, so we cache them aggressively.
   if (url.origin.includes('cdn.tailwindcss.com') || 
       url.origin.includes('aistudiocdn.com') || 
-      url.origin.includes('cdn-icons-png.flaticon.com')) {
+      url.origin.includes('flaticon.com')) {
     
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(event.request);
-        if (cachedResponse) return cachedResponse;
-        
-        try {
-          const networkResponse = await fetch(event.request);
-          // Cache the new resource
-          cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        } catch (e) {
-          return new Response("Network Error", { status: 408 });
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
+        return fetch(event.request).then((response) => {
+          // Only cache valid responses
+          if (!response || response.status !== 200 || response.type !== 'cors' && response.type !== 'basic') {
+            return response;
+          }
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        });
       })
     );
     return;
   }
 
-  // Standard Stale-While-Revalidate for app files
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
-        });
-        return networkResponse;
-      });
-      return cachedResponse || fetchPromise;
-    })
-  );
+  // 3. Default Strategy for other files (e.g. local JS/CSS): Stale-While-Revalidate
+  // Serve from cache immediately, but update cache in background
+  if (event.request.method === 'GET') {
+      event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+          const fetchPromise = fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, responseToCache);
+                });
+            }
+            return networkResponse;
+          }).catch(() => {
+              // If offline and no cache, nothing we can do for non-essential assets
+          });
+          return cachedResponse || fetchPromise;
+        })
+      );
+  }
 });
