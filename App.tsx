@@ -39,6 +39,13 @@ const App: React.FC = () => {
       return;
     }
 
+    // Check network status for AI feature
+    if (!navigator.onLine) {
+      setErrorMsg("You seem to be offline. AI analysis requires an active internet connection.");
+      event.target.value = '';
+      return;
+    }
+
     setIsAnalyzing(true);
 
     try {
@@ -64,7 +71,12 @@ const App: React.FC = () => {
           setBoard(newBoard);
           setSuccessMsg("Grid extracted! Please verify numbers before solving.");
         } catch (err) {
-          setErrorMsg("Failed to analyze image. Please try again or enter manually.");
+          // Handle API errors specifically
+          if (!navigator.onLine) {
+             setErrorMsg("Connection lost during analysis. Please check your internet.");
+          } else {
+             setErrorMsg("Failed to analyze image. Please try again or enter manually.");
+          }
         } finally {
           setIsAnalyzing(false);
           event.target.value = ''; // Reset input
