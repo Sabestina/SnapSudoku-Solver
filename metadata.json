@@ -1,0 +1,7 @@
+{
+  "name": "SnapSudoku Solver",
+  "description": "Instantly solve Sudoku puzzles by taking a picture of the Sudoku or uploading an image file. Powered by Gemini AI for recognition and an advanced backtracking algorithm for solving.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
