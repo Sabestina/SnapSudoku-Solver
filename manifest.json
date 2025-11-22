@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "short_name": "SnapSudoku",
   "name": "SnapSudoku Solver AI",
   "description": "SnapSudoku is the ultimate tool for Sudoku enthusiasts. Instantly digitize physical puzzles using your camera and Google's Gemini 3 AI. Solve complex grids in milliseconds with our advanced backtracking engine. Features include: 📸 Instant AI Camera Recognition, ⚡️ Millisecond Solver, 📵 Offline Support for Manual Entry, ✏️ Interactive Grid for Notes/Edits. Perfect for checking your work or getting unstuck on hard levels.",
