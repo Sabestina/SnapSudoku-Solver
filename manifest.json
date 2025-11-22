@@ -1,8 +1,8 @@
 {
   "short_name": "SnapSudoku",
-  "name": "SnapSudoku Solver",
-  "description": "Instantly solve Sudoku puzzles by taking a picture. Powered by Gemini AI.",
-  "categories": ["productivity", "utilities", "puzzle"],
+  "name": "SnapSudoku Solver AI",
+  "description": "SnapSudoku is the ultimate tool for Sudoku enthusiasts. Instantly digitize physical puzzles using your camera and Google's Gemini 3 AI. Solve complex grids in milliseconds with our advanced backtracking engine. Features include: 📸 Instant AI Camera Recognition, ⚡️ Millisecond Solver, 📵 Offline Support for Manual Entry, ✏️ Interactive Grid for Notes/Edits. Perfect for checking your work or getting unstuck on hard levels.",
+  "categories": ["productivity", "utilities", "puzzle", "education"],
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/10256/10256495.png",
@@ -15,6 +15,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://via.placeholder.com/1080x1920/111827/ffffff?text=SnapSudoku+Mobile+View",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Solve Sudoku on Mobile"
+    },
+    {
+      "src": "https://via.placeholder.com/1920x1080/111827/ffffff?text=SnapSudoku+Desktop+View",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop Interface"
     }
   ],
   "start_url": "/",
